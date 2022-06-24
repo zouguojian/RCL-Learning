@@ -1,7 +1,5 @@
 # -- coding: utf-8 --
 
-# -- coding: utf-8 --
-
 import tensorflow as tf
 import numpy as np
 import argparse
@@ -9,14 +7,7 @@ import pandas as pd
 from model.hyparameter import parameter
 
 class dataIterator():             #切记这里的训练时段和测试时段的所用的对象不变，否则需要重复加载数据
-    def __init__(self,
-                 site_id=0,
-                 is_training=True,
-                 time_size=3,
-                 prediction_size=1,
-                 window_step=1,
-                 normalize=False,
-                 hp=None):
+    def __init__(self, hp=None):
         '''
         :param is_training: while is_training is True,the model is training state
         :param field_len:
@@ -24,12 +15,12 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         :param prediction_size:
         :param target_site:
         '''
-        self.site_id=site_id                   # ozone ID
-        self.time_size=time_size               # time series length of input
-        self.prediction_size=prediction_size   # the length of prediction
-        self.is_training=is_training           # true or false
-        self.window_step=window_step           # windows step
         self.para=hp
+        self.site_id=self.para.target_site_id                   # ozone ID
+        self.time_size=self.para.input_length                   # time series length of input
+        self.prediction_size=self.para.output_length            # the length of prediction
+        self.is_training=self.para.is_training                  # true or false
+        self.window_step=self.para.step                         # windows step
         self.train_data= self.sudden_changed(np.array(self.get_source_data(self.para.train_path).values[:,2:],dtype=np.float32))
         self.test_data = self.sudden_changed(self.get_source_data(self.para.test_path).values[:,2:])
 
@@ -39,7 +30,7 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         self.test_length = self.test_data.shape[0]  # test data length
         self.max,self.min=self.get_max_min(self.train_data,self.test_data)   # max and min are list type, used for the later normalization
 
-        self.normalize=normalize
+        self.normalize=self.para.normalize
         if self.normalize:
             self.train_data=self.normalization(self.train_data) #normalization
             self.test_data = self.normalization(self.test_data)  # normalization
@@ -91,12 +82,12 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         shape:input_series:[time_size,field_size]
         label:[predict_size]
         '''
-        print('is_training is : ', self.is_training)
+        # print('is_training is : ', self.is_training)
         if self.is_training:
             low,high=0,int(self.train_data.shape[0]//self.para.site_num)*self.para.site_num
             data=self.train_data
         else:
-            low,high=0,int(self.test_data.shape[0]//self.para.site_num) *self.para.site_num
+            low,high=0,int(self.test_data.shape[0]//self.para.site_num) * self.para.site_num
             data=self.test_data
 
         while low+self.para.site_num*(self.para.input_length + self.para.output_length)<= high:
@@ -114,11 +105,13 @@ class dataIterator():             #切记这里的训练时段和测试时段的
 
             yield (x_input,
                    label[0])
-            if self.is_training: low += self.window_step*self.para.site_num
-            else:low+=self.prediction_size*self.para.site_num
+            if self.is_training:
+                low += self.window_step*self.para.site_num
+            else:
+                low+=self.prediction_size*self.para.site_num
         return
 
-    def next_batch(self,batch_size,epochs, is_training=True):
+    def next_batch(self,batch_size, epochs, is_training=True):
         '''
         :return the iterator!!!
         :param batch_size:

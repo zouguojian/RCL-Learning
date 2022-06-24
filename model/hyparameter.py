@@ -15,9 +15,8 @@ class parameter(object):
         self.parser.add_argument('--dropout', type=float, default=0.5, help='drop out')
         self.parser.add_argument('--site_num', type=int, default=14, help='total number of city')
         self.parser.add_argument('--features', type=int, default=7, help='numbers of the feature')
-        self.parser.add_argument('--height', type=int, default=14, help='height')
-        self.parser.add_argument('--width', type=int, default=7, help='width')
-
+        self.parser.add_argument('--height', type=int, default=3, help='height')
+        self.parser.add_argument('--width', type=int, default=3, help='width')
 
         self.parser.add_argument('--normalize', type=bool, default=True, help='normalize')
         self.parser.add_argument('--input_length', type=int, default=3, help='input length')

@@ -27,7 +27,7 @@ class mul_convlstm(object):
 
         with tf.variable_scope(name_or_scope='encoder_convlstm',reuse=tf.AUTO_REUSE):
             # Add the ConvLSTM step.
-            cell = ConvLSTMCell(self.shape, self.filters, self.kernel, normalize=self.normalize)
+            cell = ConvLSTMCell(self.shape, self.filters, self.kernel)
 
             '''
             inputs shape is : [batch size, time size, site number, features, input channel]
@@ -57,7 +57,7 @@ class mul_convlstm(object):
         '''
         # Add the ConvLSTM step.
         with tf.variable_scope(name_or_scope='decoder_convlstm', reuse=tf.AUTO_REUSE):
-            cell = ConvLSTMCell(self.shape, self.filters, self.kernel, normalize=self.normalize)
+            cell = ConvLSTMCell(self.shape, self.filters, self.kernel)
             # initial_state = cell.zero_state(self.batch, tf.float32)
 
             '''
@@ -69,7 +69,7 @@ class mul_convlstm(object):
             for i in range(self.predict_time):
                 ''' return shape is [batch size, time size, height, site num, out channel) '''
                 # # with tf.variable_scope('decoder_lstm', reuse=tf.AUTO_REUSE):
-                # h_state, state = tf.nn.dynamic_rnn(cell=cell, inputs=h_state, dtype=tf.float32)
+                h_state, state = tf.nn.dynamic_rnn(cell=cell, inputs=h_state, dtype=tf.float32)
                 # # initial_state = state
                 #
                 # print(h_state.shape)

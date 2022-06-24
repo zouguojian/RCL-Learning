@@ -67,20 +67,20 @@ class Model(object):
         '''
         resnet output shape is :  (32, 3, 14, 4, 32)
         '''
-        # mul_convl=mul_convlstm(batch=self.para.batch_size,
-        #                        predict_time=self.para.output_length,
-        #                        shape=[cnn_out.shape[2],cnn_out.shape[3]],
-        #                        filters=32,
-        #                        kernel=[3, 3],
-        #                        layer_num=self.para.hidden_layer,
-        #                        normalize=self.para.is_training)
-        #
-        # h_states=mul_convl.encoding(cnn_out)
-        # self.pres=mul_convl.decoding(h_states)
+        mul_convl=mul_convlstm(batch=self.para.batch_size,
+                               predict_time=self.para.output_length,
+                               shape=[cnn_out.shape[2],cnn_out.shape[3]],
+                               filters=6,
+                               kernel=[3, 3],
+                               layer_num=self.para.hidden_layer,
+                               normalize=self.para.is_training)
 
-        clstm = BasicConvLSTMCell([cnn_out.shape[2],cnn_out.shape[3]], [3, 3], cnn_out.shape[3],time_size= self.para.input_length)
-        state = clstm.zero_state(self.para.batch_size)
-        self.pres = clstm.Full_connect(cnn_out, state)
+        h_states=mul_convl.encoding(cnn_out)
+        self.pres=mul_convl.decoding(h_states)
+
+        # clstm = BasicConvLSTMCell([cnn_out.shape[2],cnn_out.shape[3]], [3, 3], cnn_out.shape[3],time_size= self.para.input_length)
+        # state = clstm.zero_state(self.para.batch_size)
+        # self.pres = clstm.Full_connect(cnn_out, state)
 
         self.cross_entropy = tf.reduce_mean(
             tf.sqrt(tf.reduce_mean(tf.square(self.placeholders['labels'] - self.pres), axis=0)))

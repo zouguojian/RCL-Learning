@@ -1,6 +1,6 @@
 # -- coding: utf-8 --
 import tensorflow as tf
-
+tf.reset_default_graph()
 class resnet(object):
     def __init__(self, batch_size, para=None):
         '''
@@ -92,7 +92,7 @@ class resnet(object):
             residual4=self.residual_connected(residual3,block4,1,1,32,32,residual_name='residual4')
             print('residual 4 shape is : ',residual4.shape)
 
-            max_pool=tf.nn.avg_pool(residual4, ksize=[1, 2, 2, 1], strides=[1, 1, 2, 1], padding='SAME')
+            max_pool=tf.nn.avg_pool(residual4, ksize=[1, 2, 2, 1], strides=[1, 1, 2, 1], padding='SAME', name='cnn-pooling')
 
             print('max_pool output shape is : ', max_pool.shape)
 

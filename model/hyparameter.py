@@ -19,7 +19,7 @@ class parameter(object):
         self.parser.add_argument('--width', type=int, default=7, help='width')
 
 
-        self.parser.add_argument('--normalize', type=bool, default=False, help='normalize')
+        self.parser.add_argument('--normalize', type=bool, default=True, help='normalize')
         self.parser.add_argument('--input_length', type=int, default=3, help='input length')
         self.parser.add_argument('--output_length', type=int, default=1, help='output length')
 
@@ -32,13 +32,13 @@ class parameter(object):
         self.parser.add_argument('--test_set_rate', type=float, default=1.0, help='test set rate')
 
         self.parser.add_argument('--train_path', type=str,
-                                 default='data/train_around_weather.csv',
+                                 default='data/train_around_sample.csv',
                                  help='training set file address')
         self.parser.add_argument('--val_path', type=str,
                                  default='data/val_around_weather.csv',
                                  help='validate set file address')
         self.parser.add_argument('--test_path', type=str,
-                                 default='data/test_around_weather.csv',
+                                 default='data/test_around_sample.csv',
                                  help='test set file address')
 
         self.parser.add_argument('--file_out', type=str, default='weights/ckpt', help='file out')

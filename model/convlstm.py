@@ -40,31 +40,36 @@ class ConvLSTMCell(tf.nn.rnn_cell.RNNCell):
     x = tf.concat([x, h], axis=self._feature_axis)
     n = x.shape[-1].value
     m = 4 * self._filters if self._filters > 1 else 4
-    W = tf.get_variable('kernel', self._kernel + [n, m])
-    y = tf.nn.convolution(x, W, 'SAME', data_format=self._data_format)
+    # w = tf.Variable(initial_value=tf.random_normal(shape=self._kernel + [n, m]),name='kernel',dtype=tf.float32)
+    w = tf.get_variable('kernel', self._kernel + [n, m])
+    y = tf.nn.convolution(x, w, 'SAME', data_format=self._data_format)
     if not self._normalize:
-      y += tf.get_variable('bias', [m], initializer=tf.zeros_initializer())
+        # y += tf.Variable(initial_value=tf.random_normal(shape=[m]), name='bias')
+        y += tf.get_variable('bias', [m], initializer=tf.zeros_initializer())
     j, i, f, o = tf.split(y, 4, axis=self._feature_axis)
 
     if self._peephole:
-      i += tf.get_variable('W_ci', c.shape[1:]) * c
-      f += tf.get_variable('W_cf', c.shape[1:]) * c
+        # i += tf.Variable(initial_value=tf.random_normal(shape=c.shape[1:]), name='W_ci') * c
+        # f += tf.Variable(initial_value=tf.random_normal(shape=c.shape[1:]), name='W_cf') * c
+        i += tf.get_variable('W_ci', c.shape[1:]) * c
+        f += tf.get_variable('W_cf', c.shape[1:]) * c
 
     if self._normalize:
-      j = tf.contrib.layers.layer_norm(j)
-      i = tf.contrib.layers.layer_norm(i)
-      f = tf.contrib.layers.layer_norm(f)
+        j = tf.contrib.layers.layer_norm(j)
+        i = tf.contrib.layers.layer_norm(i)
+        f = tf.contrib.layers.layer_norm(f)
 
     f = tf.sigmoid(f + self._forget_bias)
     i = tf.sigmoid(i)
     c = c * f + i * self._activation(j)
 
     if self._peephole:
-      o += tf.get_variable('W_co', c.shape[1:]) * c
+        # o += tf.Variable(initial_value=tf.random_normal(shape=c.shape[1:]), name='W_co') * c
+        o += tf.get_variable('W_co', c.shape[1:]) * c
 
     if self._normalize:
-      o = tf.contrib.layers.layer_norm(o)
-      c = tf.contrib.layers.layer_norm(c)
+        o = tf.contrib.layers.layer_norm(o)
+        c = tf.contrib.layers.layer_norm(c)
 
     o = tf.sigmoid(o)
     h = o * self._activation(c)
@@ -84,18 +89,17 @@ if __name__ == '__main__':
 
     # Create a placeholder for videos.
     inputs = tf.placeholder(tf.float32, [batch_size, timesteps] + shape + [channels])
-
-    # Add the ConvLSTM step.
-    cell = ConvLSTMCell(shape, filters, kernel)
-
-    '''
-    inputs shape is : [batch size, time size, site number, features, input channel]
-    outputs is : [batch size, time size, site number, features, output channel]
-    state: LSTMStateTuple(c=<tf.Tensor 'rnn/while/Exit_3:0' shape=(32, 162, 5, 12) dtype=float32>, 
-            h=<tf.Tensor 'rnn/while/Exit_4:0' shape=(32, 162, 5, 12) dtype=float32>)
-    '''
-    outputs, state = tf.nn.dynamic_rnn(cell, inputs, dtype=inputs.dtype)
-
-    print(outputs.shape)
-    print(state)
-
+    #
+    # # Add the ConvLSTM step.
+    # cell = ConvLSTMCell(shape, filters, kernel)
+    #
+    # '''
+    # inputs shape is : [batch size, time size, site number, features, input channel]
+    # outputs is : [batch size, time size, site number, features, output channel]
+    # state: LSTMStateTuple(c=<tf.Tensor 'rnn/while/Exit_3:0' shape=(32, 162, 5, 12) dtype=float32>,
+    #         h=<tf.Tensor 'rnn/while/Exit_4:0' shape=(32, 162, 5, 12) dtype=float32>)
+    # '''
+    # outputs, state = tf.nn.dynamic_rnn(cell, inputs, dtype=inputs.dtype)
+    #
+    # print(outputs.shape)
+    # print(state)

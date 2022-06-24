@@ -30,7 +30,7 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         self.is_training=is_training           # true or false
         self.window_step=window_step           # windows step
         self.para=hp
-        self.train_data= self.sudden_changed(self.get_source_data(self.para.train_path).values[:,2:])
+        self.train_data= self.sudden_changed(np.array(self.get_source_data(self.para.train_path).values[:,2:],dtype=np.float32))
         self.test_data = self.sudden_changed(self.get_source_data(self.para.test_path).values[:,2:])
 
         # self.data=self.source_data.loc[self.source_data['ZoneID']==self.site_id]
@@ -54,7 +54,7 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         for j in range(shape[1]):
             for i in range(shape[0]):
                 if i != 0:
-                    if data[i][j]- data[i - 1][j] > sundden[j]:
+                    if float(data[i][j])- float(data[i - 1][j]) > sundden[j]:
                         data[i][j] = data[i - 1][j]
         return data
 
@@ -63,6 +63,7 @@ class dataIterator():             #切记这里的训练时段和测试时段的
         :return:
         '''
         data = pd.read_csv(file_path, encoding='utf-8')
+        # print(data.values)
         return data
 
     def get_max_min(self, train_data=None,test_data=None):

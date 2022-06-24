@@ -1,11 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jan 23 23:35:58 2018
+# -- coding: utf-8 --
 
-@author: Administrator
-"""
 from model.res_net import resnet
-from model.multi_convlstm import mul_convlstm
+from model.multi_convlstm import *
 from model.hyparameter import parameter
 from model.data_process import dataIterator
 
@@ -15,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 from matplotlib.pyplot import MultipleLocator
+
 tf.reset_default_graph()
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 logs_path="board"
@@ -55,7 +52,6 @@ class Model(object):
         # create model
 
         l = resnet(batch_size=self.para.batch_size,para=para)
-
         x_input = self.placeholders['features']
         inputs = tf.reshape(x_input, shape=[-1, self.para.input_length, self.para.height, self.para.width])
         '''
@@ -66,18 +62,19 @@ class Model(object):
 
         print('resnet output shape is : ',cnn_out.shape)
         '''
-        resnet output shape is :  (32, 3, 14, 4, 6)
+        resnet output shape is :  (32, 3, 14, 4, 32)
         '''
         mul_convl=mul_convlstm(batch=self.para.batch_size,
                                predict_time=self.para.output_length,
                                shape=[cnn_out.shape[2],cnn_out.shape[3]],
-                               filters=6,
-                               kernel=[self.para.height,2],
+                               filters=32,
+                               kernel=[self.para.height, 2],
                                layer_num=self.para.hidden_layer,
                                normalize=self.para.is_training)
 
         h_states=mul_convl.encoding(cnn_out)
         self.pres=mul_convl.decoding(h_states)
+
         self.cross_entropy = tf.reduce_mean(
             tf.sqrt(tf.reduce_mean(tf.square(self.placeholders['labels'] - self.pres), axis=0)))
 
@@ -87,7 +84,7 @@ class Model(object):
         print(self.cross_entropy)
         print('cross shape is : ',self.cross_entropy.shape)
 
-        tf.summary.scalar('cross_entropy',self.cross_entropy)
+        # tf.summary.scalar('cross_entropy',self.cross_entropy)
         # backprocess and update the parameters
         self.train_op = tf.train.AdamOptimizer(self.para.learning_rate).minimize(self.cross_entropy)
 
@@ -175,8 +172,11 @@ class Model(object):
 
         max_rmse = 100
         self.sess.run(tf.global_variables_initializer())
-        merged = tf.summary.merge_all()
-        writer = tf.summary.FileWriter(logs_path,graph=tf.get_default_graph())
+        # merged = tf.summary.merge_all()
+        # writer = tf.summary.FileWriter(logs_path,graph=tf.get_default_graph())
+        #
+        # for (x, y) in zip(tf.global_variables(), self.sess.run(tf.global_variables())):
+        #     print('\n', x, y)
 
         iterate=self.iterate
         next_elements=iterate.next_batch(batch_size=self.para.batch_size,epochs=self.para.epochs,is_training=True)
@@ -194,19 +194,19 @@ class Model(object):
             feed_dict = self.construct_feed_dict(features, label, self.placeholders)
             feed_dict.update({self.placeholders['dropout']: self.para.dropout})
 
-            summary, loss, _ = self.sess.run((merged,self.cross_entropy,self.train_op), feed_dict=feed_dict)
+            loss, _ = self.sess.run((self.cross_entropy,self.train_op), feed_dict=feed_dict)
             # writer.add_summary(summary, loss)
             print("after %d steps,the training average loss value is : %.6f" % (i, loss))
 
             # '''
             # validate processing
-            if i % 10 == 0:
+            if i % 10 == 0 and i>0:
                 rmse_error=self.evaluate()
 
                 if max_rmse>rmse_error:
                     print("the validate average rmse loss value is : %.6f" % (rmse_error))
                     max_rmse=rmse_error
-                    # self.saver.save(self.sess,save_path=self.para.save_path+'model.ckpt')
+                    self.saver.save(self.sess,save_path=self.para.save_path+'model.ckpt')
 
     def evaluate(self):
         '''
@@ -217,11 +217,10 @@ class Model(object):
         label_list = list()
         predict_list = list()
 
-        #with tf.Session() as sess:
-        # model_file = tf.train.latest_checkpoint(self.para.save_path)
-        # if not self.para.is_training:
-        #     print('the model weights has been loaded:')
-        #     self.saver.restore(self.sess, model_file)
+        model_file = tf.train.latest_checkpoint(self.para.save_path)
+        if not self.para.is_training:
+            print('the model weights has been loaded:')
+            self.saver.restore(self.sess, model_file)
 
         iterate_test =self.iterate
         next_ = iterate_test.next_batch(batch_size=self.para.batch_size, epochs=1,is_training=False)
@@ -236,7 +235,7 @@ class Model(object):
             features=np.reshape(np.array(x), [-1, self.para.height, self.para.width])
             feed_dict = self.construct_feed_dict(features, label, self.placeholders)
             feed_dict.update({self.placeholders['dropout']: 0.0})    #不能取 1.0，因为我们使用的是1-dropout为正则的方式，可取 0.0
-            feed_dict.update({self.placeholders['is_training']:self.para.is_training})
+            # feed_dict.update({self.placeholders['is_training']:self.para.is_training})
 
             pre = self.sess.run((self.pres), feed_dict=feed_dict)
             label_list.append(label)
@@ -273,7 +272,7 @@ def main(argv=None):
 
     if int(val) == 1:para.is_training = True
     else:
-        para.batch_size=32
+        para.batch_size=1
         para.is_training = False
 
     pre_model = Model(para)

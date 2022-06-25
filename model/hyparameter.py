@@ -8,7 +8,7 @@ class parameter(object):
 
         self.parser.add_argument('--target_site_id', type=int, default=0, help='city ID')
         self.parser.add_argument('--is_training', type=bool, default=True, help='is training')
-        self.parser.add_argument('--epochs', type=int, default=1000, help='epoch')
+        self.parser.add_argument('--epochs', type=int, default=100, help='epoch')
         self.parser.add_argument('--step', type=int, default=1, help='step')
         self.parser.add_argument('--batch_size', type=int, default=64, help='batch size')
         self.parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')

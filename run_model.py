@@ -49,18 +49,18 @@ class Model(object):
         '''
 
         # create model
-        # l = resnet(para=para)
+        l = resnet(para=para)
         x_input = self.placeholders['features']
         inputs = tf.reshape(x_input, shape=[-1, self.para.site_num, self.para.features])
         '''
         cnn output shape is : [batch size, height, site num, output channel]
         '''
-        # cnn_out = l.cnn(tf.expand_dims(inputs[:, :, :], axis=3))
-        # shape = cnn_out.shape
-
-        rescnn = Resnet(tf.expand_dims(inputs[:, :, :], axis=3), self.para.batch_size)
-        cnn_out = rescnn.CNN_layer()
+        cnn_out = l.cnn(tf.expand_dims(inputs[:, :, :], axis=3))
         shape = cnn_out.shape
+
+        # rescnn = Resnet(tf.expand_dims(inputs[:, :, :], axis=3))
+        # cnn_out = rescnn.CNN_layer()
+        # shape = cnn_out.shape
 
         cnn_out = tf.reshape(cnn_out, shape=[-1, self.para.input_length, shape[1], shape[2], shape[3]])
         print('resnet output shape is : ',cnn_out.shape)

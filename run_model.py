@@ -49,7 +49,7 @@ class Model(object):
         '''
 
         # create model
-        # l = resnet(batch_size=self.para.batch_size,para=para)
+        # l = resnet(para=para)
         x_input = self.placeholders['features']
         inputs = tf.reshape(x_input, shape=[-1, self.para.site_num, self.para.features])
         '''

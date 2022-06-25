@@ -82,21 +82,18 @@ class BasicConvLSTMCell(object):
       else:
         new_state = tf.concat(axis=3, values=[new_c, new_h])
       return new_h, new_state
+
   def State_Result(self, X, state):
       outputs = []
-      self.state = state
-#    LSTM层的运算过程
       with tf.variable_scope('CV_LSTM'):
           for timestep in range(self.time_size):
               if timestep > 0:
                   tf.get_variable_scope().reuse_variables()
-        # 这里的state保存了每一层 LSTM 的状态
               (cell_output, state) = self.C_LSTM_cell(X[:, timestep,: ,: , :],state)
               outputs.append(cell_output)
-#            print(state)
-#LSTM的最后输出结果
       h_state = outputs[-1]
       return h_state
+
   def Full_connect(self, X, state):
       state_result=self.State_Result(X, state)
       shape=state_result.get_shape().as_list()
